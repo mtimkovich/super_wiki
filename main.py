@@ -2,6 +2,8 @@ import os
 import webapp2
 import jinja2
 
+import models
+
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -19,9 +21,13 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-class MainPage(Handler):
-    def get(self):
-        self.write("wiki")
+class EditPage(Handler):
+    def get(self, page):
+        pass
+
+class WikiPage(Handler):
+    def get(self, page):
+        self.render("wiki.html", page = page)
 
 PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
 app = webapp2.WSGIApplication(
