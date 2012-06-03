@@ -1,8 +1,11 @@
 import os
 import webapp2
 import jinja2
+import logging
 
 import models
+
+from google.appengine.api import memcache
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -19,13 +22,33 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+def get_articles(update = False):
+    key = "all"
+
+    articles = memcache.get(key)
+
+    if articles is None or update:
+        logging.info('DB QUERY')
+        articles = models.Article.all()
+
+        memcache.set(key, articles)
+
+    return articles
+
 class EditPage(Handler):
-    def get(self, page):
+    def get(self, path):
         pass
 
 class WikiPage(Handler):
-    def get(self, page):
-        self.render("wiki.html", page = page)
+    def get(self, path):
+        a = get_articles().filter('path =', path).get()
+
+        if not a:
+            a = models.Article(path = path, content = path)
+
+            a.put()
+
+        self.render("wiki.html", path = path, content = a.content)
 
 PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
 app = webapp2.WSGIApplication(
