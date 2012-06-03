@@ -37,7 +37,8 @@ def get_articles(update = False):
 
 class EditPage(Handler):
     def get(self, path):
-        pass
+        self.content = get_articles().filter('path =', path).get().content
+        self.render("edit.html", content = self.content)
 
 class WikiPage(Handler):
     def get(self, path):
