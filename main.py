@@ -22,34 +22,47 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-def get_articles(update = False):
-    key = "all"
+def get_article(path, update = False):
+    article = memcache.get(path)
 
-    articles = memcache.get(key)
-
-    if articles is None or update:
+    if article is None or update:
         logging.info('DB QUERY')
-        articles = models.Article.all()
+        article = models.Article.all().filter('path =', path).get()
 
-        memcache.set(key, articles)
+        memcache.set(path, article)
 
-    return articles
+    return article
 
 class EditPage(Handler):
     def get(self, path):
-        self.content = get_articles().filter('path =', path).get().content
-        self.render("edit.html", content = self.content)
+        content = get_article(path).content
+
+        self.render('edit.html', path = path, content = content)
+
+    def post(self, path):
+        article = get_article(path)
+
+        article.content = self.request.get('content')
+
+        self.write(article.content)
+
+        article.save()
+
+        # Update memcache
+        get_article(path, True)
+
+        self.redirect(path)
 
 class WikiPage(Handler):
     def get(self, path):
-        a = get_articles().filter('path =', path).get()
+        a = get_article(path)
 
         if not a:
-            a = models.Article(path = path, content = path)
+            a = models.Article(path = path)
 
             a.put()
 
-        self.render("wiki.html", path = path, content = a.content)
+        self.render('wiki.html', path = path, content = a.content)
 
 PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
 app = webapp2.WSGIApplication(
