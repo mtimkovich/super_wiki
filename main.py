@@ -2,6 +2,7 @@ import os
 import webapp2
 import jinja2
 import logging
+import hashlib
 
 import models
 
@@ -21,6 +22,15 @@ class Handler(webapp2.RequestHandler):
 
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
+
+    def set_secure_cookie(self, name, val):
+        cookie_val = hashlib.sha256(val).hexdigest()
+        self.response.headers.add_header(
+            'Set-Cookie',
+            "{0}={1}; Path=/".format(name, cookie_val))
+
+    def login(self, user):
+        self.set_secure_cookie('user_id', str(user.key().id()))
 
 class Signup(Handler):
     def get(self):
@@ -52,6 +62,9 @@ class Signup(Handler):
             else:
                 u = models.User.register(username, password)
                 u.put()
+
+                self.login(u)
+                self.redirect('/')
 
 def get_article(path, update = False):
     article = memcache.get(path)
