@@ -66,6 +66,22 @@ class Signup(Handler):
                 self.login(u)
                 self.redirect('/')
 
+class Login(Handler):
+    def get(self):
+        self.render('login.html')
+
+    def post(self):
+        username = self.request.get('username')
+        password = self.request.get('password')
+
+        u = models.User.login(username, password)
+        if u:
+            self.login(u)
+            self.redirect('/')
+        else:
+            msg = 'Invalid login'
+            self.render('login.html', username = username, error = msg)
+
 def get_article(path, update = False):
     article = memcache.get(path)
 
@@ -79,12 +95,23 @@ def get_article(path, update = False):
 
 class EditPage(Handler):
     def get(self, path):
-        content = get_article(path).content
+        article = get_article(path)
+
+        if article:
+            content = article.content
+        else:
+            content = ''
 
         self.render('edit.html', path = path, content = content)
 
     def post(self, path):
         article = get_article(path)
+        
+        if article:
+            content = article.content
+        else:
+            article = models.Article(path = path)
+            article.put()
 
         article.content = self.request.get('content')
 
@@ -101,18 +128,17 @@ class WikiPage(Handler):
     def get(self, path):
         a = get_article(path)
 
-        if not a:
-            a = models.Article(path = path)
+        if a:
+            self.render('wiki.html', path = path, content = a.content)
+        else:
+            self.redirect('/_edit' + path)
 
-            a.put()
-
-        self.render('wiki.html', path = path, content = a.content)
 
 PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
 app = webapp2.WSGIApplication(
     [
         ('/signup', Signup),
-#         ('/login', Login),
+        ('/login', Login),
 #         ('/logout', Logout),
         ('/_edit' + PAGE_RE, EditPage),
         (PAGE_RE, WikiPage),

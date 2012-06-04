@@ -22,3 +22,9 @@ class User(db.Model):
 
         return User(username = username,
                     pw_hash = pw_hash)
+
+    @classmethod
+    def login(cls, username, password):
+        u = cls.by_name(username)
+        if u and hashlib.sha256(password).hexdigest() == u.pw_hash:
+            return u
