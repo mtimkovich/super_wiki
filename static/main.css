@@ -1,0 +1,18 @@
+.label {
+  text-align: right;
+}
+
+.error {
+  color: red;
+}
+
+header {
+  position: absolute;
+  right: 50px;
+}
+
+textarea {
+  height: 600px;
+  width: 75%;
+}
+

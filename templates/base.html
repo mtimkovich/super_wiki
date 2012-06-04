@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>{{path}}</title>
+  <link rel='stylesheet' href='/static/main.css' />
+ </head>
+
+ <body>
+  <header>
+   <a href='/_edit{{path}}'>Edit</a>
+   |
+   <a href='/login'>Login</a>
+  </header>
+
+  <br><br>
+
+  {% block main %}
+  {% endblock %}
+
+ </body>
+</html>

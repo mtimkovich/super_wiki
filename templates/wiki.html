@@ -1,15 +1,6 @@
-<html>
- <head>
-  <title>{{path}}</title>
- </head>
-
- <body>
-  <a class='header' href='/_edit{{path}}'>Edit</a>
-  |
-  <a class='header' href='/login'>Login</a>
-
-  <br><br>
+{% extends 'base.html' %}
+{% block main %}
 
   {{content}}
- </body>
-</html>
+
+{% endblock %}

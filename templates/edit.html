@@ -1,20 +1,10 @@
-<html>
- <head>
-  <title>{{path}} | Edit</title>
- </head>
+{% extends 'base.html' %}
+{% block main %}
 
- <body>
-  <style>
-   textarea {
-    height: 600px;
-    width: 75%;
-   }
-  </style>
+<form method='post'>
+ <textarea name='content'>{{content}}</textarea>
+ <br>
+ <input type='submit' value='Save'>
+</form>
 
-  <form method='post'>
-   <textarea name='content'>{{content}}</textarea>
-   <br>
-   <input type='submit' value='Save'>
-  </form>
- </body>
-</html>
+{% endblock %}
