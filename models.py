@@ -13,6 +13,10 @@ class User(db.Model):
     created = db.DateTimeProperty(auto_now_add = True)
 
     @classmethod
+    def by_id(cls, uid):
+        return User.get_by_id(uid)
+
+    @classmethod
     def by_name(cls, username):
         return User.all().filter('username =', username).get()
 

@@ -3,6 +3,7 @@ import webapp2
 import jinja2
 import logging
 import hashlib
+import hmac
 
 import models
 
@@ -11,6 +12,16 @@ from google.appengine.api import memcache
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = False)
+
+secret = "supersecret"
+
+def make_secure_val(val):
+    return "{}|{}".format(val, hmac.new(secret, val).hexdigest())
+
+def check_secure_val(secure_val):
+    val = secure_val.split('|')[0]
+    if secure_val == make_secure_val(val):
+        return val
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -24,13 +35,25 @@ class Handler(webapp2.RequestHandler):
         self.write(self.render_str(template, **kw))
 
     def set_secure_cookie(self, name, val):
-        cookie_val = hashlib.sha256(val).hexdigest()
+        cookie_val = make_secure_val(val)
         self.response.headers.add_header(
             'Set-Cookie',
             "{0}={1}; Path=/".format(name, cookie_val))
 
+    def read_secure_cookie(self, name):
+        cookie_val = self.request.cookies.get(name)
+        return cookie_val and check_secure_val(cookie_val)
+
     def login(self, user):
         self.set_secure_cookie('user_id', str(user.key().id()))
+
+    def logout(self):
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        uid = self.read_secure_cookie('user_id')
+        self.user = uid and models.User.by_id(int(uid))
 
 class Signup(Handler):
     def get(self):
@@ -81,6 +104,11 @@ class Login(Handler):
         else:
             msg = 'Invalid login'
             self.render('login.html', username = username, error = msg)
+
+class Logout(Handler):
+    def get(self):
+        self.logout()
+        self.redirect('/')
 
 def get_article(path, update = False):
     article = memcache.get(path)
@@ -139,7 +167,7 @@ app = webapp2.WSGIApplication(
     [
         ('/signup', Signup),
         ('/login', Login),
-#         ('/logout', Logout),
+        ('/logout', Logout),
         ('/_edit' + PAGE_RE, EditPage),
         (PAGE_RE, WikiPage),
     ],
