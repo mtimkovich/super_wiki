@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html>
- <head>
-  <title>{{path}}</title>
-  <link rel='stylesheet' href='/static/main.css' />
- </head>
+  <head>
+    <title>{{path}}</title>
+    <link rel='stylesheet' href='/static/main.css' />
+  </head>
 
- <body>
-  <header>
-   <a href='/_edit{{path}}'>Edit</a>
-   |
-   <a href='/login'>Login</a>
-  </header>
+  <body>
+    <header>
+    <a href='/_edit{{path}}'>Edit</a>
+    |
+    {% if logged_in %}
+      <a href='/logout'>Logout</a>
+    {% else %}
+      <a href='/login'>Login</a>
+    {% endif %}
+    </header>
 
-  <br><br>
+    <br><br>
 
-  {% block main %}
-  {% endblock %}
+    {% block main %}
+    {% endblock %}
 
- </body>
+  </body>
 </html>
