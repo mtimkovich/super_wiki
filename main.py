@@ -65,18 +65,18 @@ class Signup(Handler):
         password = self.request.get('password')
         verify = self.request.get('verify')
 
-        params = {'username': username}
+        errors = {'username': username}
 
         if not username:
-            params['error_username'] = 'Must have a username'
+            errors['error_username'] = 'Must have a username'
 
         if not password or not verify:
-            params['error_password'] = 'Must have a password'
+            errors['error_password'] = 'Must have a password'
         elif password != verify:
-            params['error_verify'] = 'The passwords do not match'
+            errors['error_verify'] = 'The passwords do not match'
 
-        if len(params) > 1:
-            self.render('signup.html', **params)
+        if len(errors) > 1:
+            self.render('signup.html', **errors)
         else:
             u = models.User.by_name(username)
 

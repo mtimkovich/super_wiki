@@ -7,11 +7,15 @@
 
   <body>
     <header>
-    <a href='/_edit{{path}}'>Edit</a>
+    <a href='/'>Home</a>
     |
     {% if logged_in %}
+      <a href='/_edit{{path}}'>Edit</a>
+      |
       <a href='/logout'>Logout</a>
     {% else %}
+      <a href='/signup'>Sign Up</a>
+      |
       <a href='/login'>Login</a>
     {% endif %}
     </header>
