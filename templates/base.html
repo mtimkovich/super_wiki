@@ -7,16 +7,14 @@
 
   <body>
     <header>
-    <a href='/'>Home</a>
+    <a href='/'>home</a>
     |
-    {% if logged_in %}
-      <a href='/_edit{{path}}'>Edit</a>
-      |
-      <a href='/logout'>Logout</a>
+    <a href='/_edit{{path}}'>edit</a>
+    |
+    {% if user %}
+    {{user.username}} <a href='/logout'>(logout)</a>
     {% else %}
-      <a href='/signup'>Sign Up</a>
-      |
-      <a href='/login'>Login</a>
+      <a href='/login'>login</a>
     {% endif %}
     </header>
 

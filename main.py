@@ -4,6 +4,7 @@ import jinja2
 import logging
 import hashlib
 import hmac
+import urllib
 
 import models
 
@@ -13,7 +14,10 @@ template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = False)
 
-secret = "supersecret"
+secret = 'supersecret'
+
+def remove_slash(path):
+    return path[1:]
 
 def make_secure_val(val):
     return "{}|{}".format(val, hmac.new(secret, val).hexdigest())
@@ -32,7 +36,7 @@ class Handler(webapp2.RequestHandler):
         return t.render(params)
 
     def render(self, template, **kw):
-        kw['logged_in'] = self.user
+        kw['user'] = self.user
         self.write(self.render_str(template, **kw))
 
     def set_secure_cookie(self, name, val):
@@ -97,11 +101,12 @@ class Login(Handler):
     def post(self):
         username = self.request.get('username')
         password = self.request.get('password')
+        returnurl = self.request.get('returnurl')
 
         u = models.User.login(username, password)
         if u:
             self.login(u)
-            self.redirect('/')
+            self.redirect('_edit/' + str(returnurl))
         else:
             msg = 'Invalid login'
             self.render('login.html', username = username, error = msg)
@@ -124,6 +129,9 @@ def get_article(path, update = False):
 
 class EditPage(Handler):
     def get(self, path):
+        if not self.user:
+            self.redirect('/login?returnurl=' + urllib.quote(remove_slash(path), ''))
+
         article = get_article(path)
 
         if article:
