@@ -62,7 +62,10 @@ class Handler(webapp2.RequestHandler):
 
 class Signup(Handler):
     def get(self):
-        self.render('signup.html')
+        if not self.user:
+            self.render('signup.html')
+        else:
+            self.redirect('/')
 
     def post(self):
         username = self.request.get('username')
@@ -96,7 +99,10 @@ class Signup(Handler):
 
 class Login(Handler):
     def get(self):
-        self.render('login.html')
+        if not self.user:
+            self.render('login.html')
+        else:
+            self.redirect('/')
 
     def post(self):
         username = self.request.get('username')
